@@ -1,8 +1,11 @@
-package tui
+package buffer
 
 import (
 	"fmt"
 	"io"
+	"strings"
+
+	"github.com/jackitaliano/wayfinder/internal/term/color"
 )
 
 type Line struct {
@@ -12,15 +15,23 @@ type Line struct {
     Gutter string
 }
 
+func BlankLine() Line {
+    return Line{"", "", "", ""} 
+}
+
+func FillLine(width int) Line {
+    return Line{color.GreenBg, "", strings.Repeat(" ", width), ""}
+}
+
 type StatusLine struct {
     Fg string
     Bg string
+    Separator string
     Mode Mode
     Row int
     Col int
     Content string
     LastInput byte
-    LastInputKey string
     LastInputMap string
 }
 

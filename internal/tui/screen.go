@@ -1,18 +1,21 @@
 package tui
 
-import "github.com/jackitaliano/wayfinder/internal/term/app"
+import (
+	"github.com/jackitaliano/wayfinder/internal/term/app"
+	"github.com/jackitaliano/wayfinder/internal/tui/buffer"
+)
 
 type Screen struct {
     Width int
     Height int
-    Buffer *Buffer
+    Buffer *buffer.Buffer
 }
 
 func NewScreen(borderChars BorderChars) Screen {
     width, height := app.GetSize()
 
-    buffer := NewBuffer(0, 0, width, height, borderChars)
-    buffer.Lines[0].Content = "hello"
+    buffer := buffer.NewBuffer(0, 0, width, height)
+    // buffer.StatusLine.Content = fmt.Sprintf("width: %v, height: %v", width, height)
 
 	return Screen{
         width,

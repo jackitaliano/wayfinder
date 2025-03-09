@@ -30,7 +30,6 @@ func (i *Input) HandleKey(inputKey byte) {
     key, handled := Keys[inputKey]
 
     i.screen.Buffer.StatusLine.LastInput = inputKey
-    i.screen.Buffer.StatusLine.LastInputKey = string(inputKey)
 
     if !handled {
         i.screen.Buffer.StatusLine.LastInputMap = ""
