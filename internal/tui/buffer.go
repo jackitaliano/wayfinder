@@ -5,7 +5,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/jackitaliano/wayfinder/internal/term"
+	"github.com/jackitaliano/wayfinder/internal/term/cursor"
+	"github.com/jackitaliano/wayfinder/internal/term/color"
 )
 
 type Buffer struct {
@@ -15,7 +16,6 @@ type Buffer struct {
     Height int
     Lines []Line
     borderChars BorderChars
-    CursorColor term.TermSpecifier
     CursorLine int
     CursorX int
     StatusLine StatusLine
@@ -36,7 +36,6 @@ func NewBuffer(x int, y int, width int, height int, borderChars BorderChars) Buf
         height,
         lines,
         borderChars,
-        term.RedBg,
         0,
         0,
         statusLine,
@@ -102,16 +101,14 @@ func (b *Buffer) MoveCursorRight() {
 }
 
 func (b *Buffer) CursorNormalMode() {
-    // b.CursorColor = term.RedBg
     b.StatusLine.Mode = NORMAL
-    term.SetBlockCursor(os.Stdin)
+    cursor.SetBlock(os.Stdin)
     b.MoveCursorLeft()
     b.DrawCursor()
 }
 
 func (b *Buffer) CursorInsertMode() {
-    // b.CursorColor = term.GreenBg
-    term.SetLineCursor(os.Stdin)
+    cursor.SetBar(os.Stdin)
     b.StatusLine.Mode = INSERT
     b.DrawCursor()
 }
@@ -121,7 +118,7 @@ func (b *Buffer) CursorAppendMode() {
     if len(b.Lines[b.CursorLine].Content) > 0 {
         b.CursorX += 1
     }
-    term.SetLineCursor(os.Stdin)
+    cursor.SetBar(os.Stdin)
     b.StatusLine.Mode = INSERT
     b.DrawCursor()
 }
@@ -257,16 +254,12 @@ func (b Buffer) DrawCursor() {
 
     visibleContent := line.Content[:b.Width]
 
-    term.SetCursor(os.Stdin, b.X + 1, b.Y + b.CursorLine + 1)
+    cursor.SetPos(os.Stdin, b.Y + b.CursorLine + 1, b.X + 1)
 
-    fmt.Fprint(os.Stdin, line.Fg, term.GrayBg, visibleContent, term.Reset)
-
-    // term.SetCursor(os.Stdin, b.X + b.CursorX + 1, b.Y + b.CursorLine + 1)
-    //
-    // fmt.Fprint(os.Stdin, line.Fg, b.CursorColor, string(visibleContent[b.CursorX]), term.Reset)
+    fmt.Fprint(os.Stdin, line.Fg, color.GrayBg, visibleContent, color.ResetFormat)
 
     b.DrawStatusLine()
-    term.SetCursor(os.Stdin, b.X + b.CursorX + 1, b.Y + b.CursorLine + 1)
+    cursor.SetPos(os.Stdin, b.Y + b.CursorLine + 1, b.X + b.CursorX + 1,)
 }
 
 func (b Buffer) DrawLine(lineNum int) {
@@ -275,10 +268,10 @@ func (b Buffer) DrawLine(lineNum int) {
 
     visibleContent := line.Content[:b.Width]
 
-    term.SetCursor(os.Stdin, b.X + 1, b.Y + lineNum + 1)
-    fmt.Fprint(os.Stdin, line.Fg, line.Bg, visibleContent, term.Reset)
+    cursor.SetPos(os.Stdin, b.Y + lineNum + 1, b.X + 1)
+    fmt.Fprint(os.Stdin, line.Fg, line.Bg, visibleContent, color.ResetFormat)
 
-    term.SetCursor(os.Stdin, b.X + b.CursorX + 1, b.Y + b.CursorLine + 1)
+    cursor.SetPos(os.Stdin, b.Y + b.CursorLine + 1, b.X + b.CursorX + 1)
 }
 
 func (b Buffer) DrawStatusLine() {
@@ -286,22 +279,19 @@ func (b Buffer) DrawStatusLine() {
 
     b.StatusLine.Row = b.CursorLine
     b.StatusLine.Col = b.CursorX
-    term.SetCursor(os.Stdin, b.X + 1, b.Y + b.Height)
+    cursor.SetPos(os.Stdin, b.Y + b.Height, b.X + 1)
 
     position := fmt.Sprintf("%v:%v", b.StatusLine.Row, b.StatusLine.Col)
-    // input := fmt.Sprintf("%b:%v:%v", b.StatusLine.LastInput, b.StatusLine.LastInputKey, b.StatusLine.LastInputMap)
     input := fmt.Sprintf("%v:%v | ", b.StatusLine.LastInput, b.StatusLine.LastInputMap)
 
     padLen := b.Width - len(b.StatusLine.Mode) - len(b.StatusLine.Content) - len(position) - len(input)
     pad := strings.Repeat(" ", padLen)
 
-    // fmt.Fprint(os.Stdin, b.StatusLine.Fg, b.StatusLine.Bg, b.StatusLine.Mode, " | ", b.StatusLine.Content, " | ", position)
+    fmt.Fprint(os.Stdin, b.StatusLine.Fg, b.StatusLine.Bg, b.StatusLine.Mode, color.ResetFormat)
 
-    fmt.Fprint(os.Stdin, b.StatusLine.Fg, b.StatusLine.Bg, b.StatusLine.Mode, term.Reset)
+    fmt.Fprint(os.Stdin, b.StatusLine.Fg, b.StatusLine.Bg, b.StatusLine.Content, pad, color.ResetFormat)
 
-    fmt.Fprint(os.Stdin, b.StatusLine.Fg, b.StatusLine.Bg, b.StatusLine.Content, pad, term.Reset)
-
-    fmt.Fprint(os.Stdin, b.StatusLine.Fg, b.StatusLine.Bg, input, position, term.Reset)
+    fmt.Fprint(os.Stdin, b.StatusLine.Fg, b.StatusLine.Bg, input, position, color.ResetFormat)
 }
 
 func (b Buffer) Draw() {

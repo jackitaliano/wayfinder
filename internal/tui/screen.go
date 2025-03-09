@@ -1,6 +1,6 @@
 package tui
 
-import "github.com/jackitaliano/wayfinder/internal/term"
+import "github.com/jackitaliano/wayfinder/internal/term/app"
 
 type Screen struct {
     Width int
@@ -9,7 +9,7 @@ type Screen struct {
 }
 
 func NewScreen(borderChars BorderChars) Screen {
-    width, height := term.GetTermSize()
+    width, height := app.GetSize()
 
     buffer := NewBuffer(0, 0, width, height, borderChars)
     buffer.Lines[0].Content = "hello"

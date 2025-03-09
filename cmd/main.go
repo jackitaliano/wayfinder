@@ -5,13 +5,13 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/jackitaliano/wayfinder/internal/term"
+	"github.com/jackitaliano/wayfinder/internal/term/app"
 	"github.com/jackitaliano/wayfinder/internal/tui"
 )
 
 func main(){
-    term.Startup()
-    defer term.Cleanup()
+    app.Startup()
+    defer app.Cleanup()
     keyChan := make(chan byte)
     defer close(keyChan)
 
@@ -19,7 +19,7 @@ func main(){
     signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
     go func() {
         <-sigChan
-        term.Cleanup()
+        app.Cleanup()
         close(keyChan)
         os.Exit(0)
     }()

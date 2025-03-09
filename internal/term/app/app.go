@@ -1,4 +1,4 @@
-package term
+package app
 
 import (
 	"log"
@@ -6,23 +6,24 @@ import (
 	"os/exec"
 	"strconv"
 	"strings"
+
+    "github.com/jackitaliano/wayfinder/internal/term/buffer"
+    "github.com/jackitaliano/wayfinder/internal/term/io"
 )
 
 type TermSpecifier string
 
 func Startup() {
-    OpenAltBuf(os.Stdin)
-    // HideCursor(os.Stdin)
-	enableRawMode()
+    buffer.EnableAlternate(os.Stdin)
+    io.EnableRawMode()
 }
 
 func Cleanup() {
-    OpenMainBuf(os.Stdin)
-    // RevealCursor(os.Stdin)
-	disableRawMode()
+    buffer.DisableAlternate(os.Stdin)
+    io.DisableRawMode()
 }
 
-func GetTermSize() (int, int) {
+func GetSize() (int, int) {
     cmd := exec.Command("stty", "size")
 	cmd.Stdin = os.Stdin
 	out, err := cmd.Output()

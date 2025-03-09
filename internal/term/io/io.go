@@ -1,4 +1,4 @@
-package term
+package io
 
 import (
 	"fmt"
@@ -15,6 +15,43 @@ const (
 	TIOCGETA = 0x40487413 // macOS/BSD
 	TIOCSETA = 0x80487414
 )
+
+// Enable raw mode (disable line buffering)
+func EnableRawMode() {
+	fd := int(os.Stdin.Fd())
+	termios, err := getTermios(fd)
+	if err != nil {
+		fmt.Println("Error getting terminal attributes:", err)
+		os.Exit(1)
+	}
+
+	// Modify termios to disable canonical mode & echo
+	newTermios := *termios
+	newTermios.Lflag &^= syscall.ICANON | syscall.ECHO
+
+	err = setTermios(fd, &newTermios)
+	if err != nil {
+		fmt.Println("Error setting terminal attributes:", err)
+		os.Exit(1)
+	}
+}
+
+// Disable raw mode (restore normal terminal behavior)
+func DisableRawMode() {
+	fd := int(os.Stdin.Fd())
+	termios, err := getTermios(fd)
+	if err != nil {
+		fmt.Println("Error getting terminal attributes:", err)
+		os.Exit(1)
+	}
+
+	// Restore original settings
+	err = setTermios(fd, termios)
+	if err != nil {
+		fmt.Println("Error restoring terminal attributes:", err)
+		os.Exit(1)
+	}
+}
 
 // getTermios fetches the terminal attributes based on the platform
 func getTermios(fd int) (*syscall.Termios, error) {
@@ -53,39 +90,3 @@ func isMacOS() bool {
 	return runtime.GOOS == "darwin" || runtime.GOOS == "macos"
 }
 
-// Enable raw mode (disable line buffering)
-func enableRawMode() {
-	fd := int(os.Stdin.Fd())
-	termios, err := getTermios(fd)
-	if err != nil {
-		fmt.Println("Error getting terminal attributes:", err)
-		os.Exit(1)
-	}
-
-	// Modify termios to disable canonical mode & echo
-	newTermios := *termios
-	newTermios.Lflag &^= syscall.ICANON | syscall.ECHO
-
-	err = setTermios(fd, &newTermios)
-	if err != nil {
-		fmt.Println("Error setting terminal attributes:", err)
-		os.Exit(1)
-	}
-}
-
-// Disable raw mode (restore normal terminal behavior)
-func disableRawMode() {
-	fd := int(os.Stdin.Fd())
-	termios, err := getTermios(fd)
-	if err != nil {
-		fmt.Println("Error getting terminal attributes:", err)
-		os.Exit(1)
-	}
-
-	// Restore original settings
-	err = setTermios(fd, termios)
-	if err != nil {
-		fmt.Println("Error restoring terminal attributes:", err)
-		os.Exit(1)
-	}
-}
