@@ -13,8 +13,6 @@ func NewScreen(borderChars BorderChars) Screen {
 
     buffer := NewBuffer(0, 0, width, height, borderChars)
     buffer.Lines[0].Content = "hello"
-    buffer.Lines[0].Len = len("hello")
-
 
 	return Screen{
         width,

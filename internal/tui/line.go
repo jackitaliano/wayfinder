@@ -8,9 +8,8 @@ import (
 type Line struct {
     Fg string
     Bg string
-    Gutter string
     Content string
-    Len int
+    Gutter string
 }
 
 type StatusLine struct {

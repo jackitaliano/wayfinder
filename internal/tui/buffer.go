@@ -24,7 +24,7 @@ type Buffer struct {
 func NewBuffer(x int, y int, width int, height int, borderChars BorderChars) Buffer {
     lines := make([]Line, height)
     for i := 0; i < height; i++ {
-        lines[i] = Line{"", "", "", "", 0}
+        lines[i] = Line{"", "", "", ""}
     }
 
     statusLine := StatusLine{"", "", NORMAL, 0, 0, "", 0, " ", " "}
@@ -50,8 +50,8 @@ func (b *Buffer) MoveCursorDown() {
         return
     }
 
-    if b.CursorX > b.Lines[b.CursorLine + 1].Len {
-        b.CursorX = b.Lines[b.CursorLine + 1].Len
+    if b.CursorX > len(b.Lines[b.CursorLine + 1].Content) {
+        b.CursorX = len(b.Lines[b.CursorLine + 1].Content)
     }
 
     b.DrawLine(b.CursorLine)
@@ -66,8 +66,8 @@ func (b *Buffer) MoveCursorUp() {
         return
     }
 
-    if b.CursorX > b.Lines[b.CursorLine - 1].Len {
-        b.CursorX = b.Lines[b.CursorLine - 1].Len
+    if b.CursorX > len(b.Lines[b.CursorLine - 1].Content) {
+        b.CursorX = len(b.Lines[b.CursorLine - 1].Content)
     }
 
     b.DrawLine(b.CursorLine)
@@ -90,7 +90,7 @@ func (b *Buffer) MoveCursorLeft() {
 }
 
 func (b *Buffer) MoveCursorRight() {
-    if b.CursorX >= b.Lines[b.CursorLine].Len - 1 {
+    if b.CursorX >= len(b.Lines[b.CursorLine].Content) - 1 {
         return
     }
 
@@ -117,8 +117,10 @@ func (b *Buffer) CursorInsertMode() {
 }
 
 func (b *Buffer) CursorAppendMode() {
-    b.CursorX += 1
-    // b.CursorColor = term.GreenBg
+
+    if len(b.Lines[b.CursorLine].Content) > 0 {
+        b.CursorX += 1
+    }
     term.SetLineCursor(os.Stdin)
     b.StatusLine.Mode = INSERT
     b.DrawCursor()
@@ -130,12 +132,12 @@ func (b *Buffer) CursorHome() {
 }
 
 func (b *Buffer) CursorEnd() {
-    b.CursorX = b.Lines[b.CursorLine].Len - 1
+    b.CursorX = len(b.Lines[b.CursorLine].Content) - 1
     b.DrawCursor()
 }
 
 func (b *Buffer) AppendLineBelow() {
-    newLine := Line{"", "", "", "", 0}
+    newLine := Line{"", "", "", ""}
 
     b.Lines = append(b.Lines[:b.CursorLine + 1], append([]Line{newLine}, b.Lines[b.CursorLine + 1:]...)...)
 
@@ -146,7 +148,7 @@ func (b *Buffer) AppendLineBelow() {
 }
 
 func (b *Buffer) AppendLineAbove() {
-    newLine := Line{"", "", "", "", 0}
+    newLine := Line{"", "", "", ""}
 
     b.Lines = append(b.Lines[:b.CursorLine], append([]Line{newLine}, b.Lines[b.CursorLine:]...)...)
 
@@ -157,29 +159,32 @@ func (b *Buffer) AppendLineAbove() {
 
 func (b *Buffer) DeleteToEnd() {
     line := b.Lines[b.CursorLine]
-    if line.Len == 0 {
+    if len(line.Content) == 0 {
         return
     }
 
     b.Lines[b.CursorLine].Content = line.Content[:b.CursorX]
-    b.Lines[b.CursorLine].Len = len(b.Lines[b.CursorLine].Content)
 
     b.CursorX -= 1
+
+    if b.CursorX < 0 {
+        b.CursorX = 0
+    }
 
     b.DrawCursor()
 }
 
 func (b *Buffer) DeleteChar() {
     line := b.Lines[b.CursorLine]
-    if line.Len == 0 {
+    if len(line.Content) == 0 {
         return
     }
 
     b.Lines[b.CursorLine].Content = line.Content[:b.CursorX] + line.Content[b.CursorX + 1:]
-    b.Lines[b.CursorLine].Len = len(b.Lines[b.CursorLine].Content)
 
-    if b.CursorX == line.Len - 1 {
-        b.CursorX -= 1
+    b.CursorX -= 1
+    if b.CursorX < 0 {
+        b.CursorX = 0
     }
 
     b.DrawCursor()
@@ -192,9 +197,9 @@ func (b *Buffer) Backspace() {
         }
 
         line := b.Lines[b.CursorLine]
-        b.CursorX = b.Lines[b.CursorLine - 1].Len
+        b.CursorX = len(b.Lines[b.CursorLine - 1].Content)
 
-        if line.Len == 0 {
+        if len(line.Content) == 0 {
             b.Lines = append(b.Lines[:b.CursorLine], b.Lines[b.CursorLine + 1:]...)
 
             b.CursorLine -= 1
@@ -205,8 +210,6 @@ func (b *Buffer) Backspace() {
         }
 
         b.Lines[b.CursorLine - 1].Content += b.Lines[b.CursorLine].Content
-
-        b.Lines[b.CursorLine - 1].Len = len(line.Content)
 
         b.Lines = append(b.Lines[:b.CursorLine], b.Lines[b.CursorLine + 1:]...)
 
@@ -219,7 +222,6 @@ func (b *Buffer) Backspace() {
 
     line := b.Lines[b.CursorLine]
     b.Lines[b.CursorLine].Content = line.Content[:b.CursorX - 1] + line.Content[b.CursorX:]
-    b.Lines[b.CursorLine].Len = len(b.Lines[b.CursorLine].Content)
     b.CursorX -= 1
     b.DrawCursor()
 }
@@ -227,15 +229,14 @@ func (b *Buffer) Backspace() {
 func (b *Buffer) CarryLine() {
     line := b.Lines[b.CursorLine]
 
-    carried := line.Content[:b.CursorX]
-    remains := line.Content[b.CursorX:]
+    remains := line.Content[:b.CursorX]
+    carry := line.Content[b.CursorX:]
 
-    newLine := Line{"", "", carried, "", len(carried)}
+    newLine := Line{"", "", carry, ""}
 
     b.Lines[b.CursorLine].Content = remains
-    b.Lines[b.CursorLine].Len = len(remains)
 
-    b.Lines = append(b.Lines[:b.CursorLine], append([]Line{newLine}, b.Lines[b.CursorLine:]...)...)
+    b.Lines = append(b.Lines[:b.CursorLine + 1], append([]Line{newLine}, b.Lines[b.CursorLine + 1:]...)...)
 
     b.CursorLine += 1
     b.CursorX = b.X
@@ -246,14 +247,13 @@ func (b *Buffer) CarryLine() {
 func (b *Buffer) InsertChar(char string) {
     line := b.Lines[b.CursorLine]
     b.Lines[b.CursorLine].Content = line.Content[:b.CursorX] + char + line.Content[b.CursorX:]
-    b.Lines[b.CursorLine].Len += 1
     b.CursorX += 1
     b.DrawCursor()
 }
 
 func (b Buffer) DrawCursor() {
     line := b.Lines[b.CursorLine]
-    line.Content = line.Content + strings.Repeat(" ", b.Width - line.Len + 1)
+    line.Content = line.Content + strings.Repeat(" ", b.Width - len(line.Content) + 1)
 
     visibleContent := line.Content[:b.Width]
 
@@ -271,7 +271,7 @@ func (b Buffer) DrawCursor() {
 
 func (b Buffer) DrawLine(lineNum int) {
     line := b.Lines[lineNum]
-    line.Content = line.Content + strings.Repeat(" ", b.Width - line.Len)
+    line.Content = line.Content + strings.Repeat(" ", b.Width - len(line.Content))
 
     visibleContent := line.Content[:b.Width]
 
