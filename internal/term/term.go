@@ -12,13 +12,13 @@ type TermSpecifier string
 
 func Startup() {
     OpenAltBuf(os.Stdin)
-    HideCursor(os.Stdin)
+    // HideCursor(os.Stdin)
 	enableRawMode()
 }
 
 func Cleanup() {
     OpenMainBuf(os.Stdin)
-    RevealCursor(os.Stdin)
+    // RevealCursor(os.Stdin)
 	disableRawMode()
 }
 

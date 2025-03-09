@@ -10,6 +10,8 @@ const (
     Cursor00 TermSpecifier = "\033[H"
     CursorHide TermSpecifier = "\033[?25l"
     CursorReveal TermSpecifier = "\033[?25h"
+    CursorBlock TermSpecifier = "\033[2 q"
+    CursorLine TermSpecifier = "\033[6 q"
 )
 
 func CursorPos(x int, y int) string {
@@ -22,6 +24,14 @@ func HideCursor(io io.Writer) {
 
 func RevealCursor(io io.Writer) {
     fmt.Fprint(io, CursorReveal)
+}
+
+func SetBlockCursor(io io.Writer) {
+    fmt.Fprint(io, CursorBlock)
+}
+
+func SetLineCursor(io io.Writer) {
+    fmt.Fprint(io, CursorLine)
 }
 
 func SetCursor(io io.Writer, x int, y int) {

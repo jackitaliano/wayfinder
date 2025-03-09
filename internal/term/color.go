@@ -20,12 +20,14 @@ const (
     RedFg TermSpecifier = "\033[38;2;255;0;0m"
     GreenFg TermSpecifier = "\033[38;2;0;255;0m"
     BlueFg TermSpecifier = "\033[38;2;0;0;255m"
+    GrayFg TermSpecifier = "\033[38;2;40;40;40m"
 
     WhiteBg TermSpecifier = "\033[48;2;255;255;255m"
     BlackBg TermSpecifier = "\033[48;2;0;0;0m"
     RedBg TermSpecifier = "\033[48;2;255;0;0m"
     GreenBg TermSpecifier = "\033[48;2;0;255;0m"
     BlueBg TermSpecifier = "\033[48;2;0;0;255m"
+    GrayBg TermSpecifier = "\033[48;2;40;40;40m"
 
     Reset TermSpecifier = "\033[0m"
 )

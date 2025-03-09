@@ -12,7 +12,8 @@ func NewScreen(borderChars BorderChars) Screen {
     width, height := term.GetTermSize()
 
     buffer := NewBuffer(0, 0, width, height, borderChars)
-    buffer.Lines[0].Content = "hello" + buffer.Lines[0].Content[5:]
+    buffer.Lines[0].Content = "hello"
+    buffer.Lines[0].Len = len("hello")
 
 
 	return Screen{
@@ -40,4 +41,8 @@ func (s Screen) MoveCursorLeft() {
 
 func (s Screen) MoveCursorRight() {
     s.Buffer.MoveCursorRight()
+}
+
+func (s Screen) InsertChar(char string) {
+    s.Buffer.InsertChar(char)
 }
