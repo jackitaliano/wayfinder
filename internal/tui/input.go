@@ -94,13 +94,13 @@ func (i *Input) HandleNormalKeys(key string) {
 
     if key == "o" {
         i.Mode = INSERT
-        i.screen.Buffer.AppendLineBelow()
+        i.screen.Buffer.OpenLineBelow()
         i.screen.Buffer.CursorInsertMode()
     }
 
     if key == "O" {
         i.Mode = INSERT
-        i.screen.Buffer.AppendLineAbove()
+        i.screen.Buffer.OpenLineAbove()
         i.screen.Buffer.CursorInsertMode()
     }
 

@@ -9,11 +9,19 @@ func (b *Buffer) StatusPrintf(format string, a...any) {
     b.DrawStatusLine()
 }
 
+func (b *Buffer) StatusPrint(a...any) {
+    b.StatusLine.Content = fmt.Sprint(a...)
+    b.DrawStatusLine()
+}
 
-func (b *Buffer) AppendLineBelow() {
-    b.Lines = append(b.Lines[:b.CursorLine + 1], append([]Line{BlankLine()}, b.Lines[b.CursorLine + 1:]...)...)
+func (b *Buffer) insertLine(position int) {
+    b.Lines = append(b.Lines[:position], append([]Line{BlankLine()}, b.Lines[position:]...)...)
+}
 
-    b.CursorLine += 1
+func (b *Buffer) openLine(offset int) {
+    b.insertLine(b.CursorLine + offset)
+
+    b.CursorLine += offset
     b.CursorCol = b.TermCol
 
     b.CurrentLine = &b.Lines[b.CursorLine]
@@ -21,15 +29,14 @@ func (b *Buffer) AppendLineBelow() {
     b.Draw()
 }
 
-func (b *Buffer) AppendLineAbove() {
-    b.Lines = append(b.Lines[:b.CursorLine], append([]Line{BlankLine()}, b.Lines[b.CursorLine:]...)...)
-
-    b.CursorCol = b.TermCol
-
-    b.CurrentLine = &b.Lines[b.CursorLine]
-
-    b.Draw()
+func (b *Buffer) OpenLineBelow() {
+    b.openLine(1)
 }
+
+func (b *Buffer) OpenLineAbove() {
+    b.openLine(0)
+}
+
 
 func (b *Buffer) DeleteToEnd() {
     line := b.CurrentLine
@@ -65,40 +72,32 @@ func (b *Buffer) DeleteChar() {
 }
 
 func (b *Buffer) Backspace() {
-    if b.CursorCol == 0 {
-        if b.CursorLine == 0 {
-            return
-        }
-
-        b.CursorCol = len(b.Lines[b.CursorLine - 1].Content)
-
-        if len(b.CurrentLine.Content) == 0 {
-            b.Lines = append(b.Lines[:b.CursorLine], b.Lines[b.CursorLine + 1:]...)
-
-            b.CursorLine -= 1
-
-            b.Draw()
-
-            return
-        }
-
-        b.Lines[b.CursorLine - 1].Content += b.CurrentLine.Content
-
-        b.Lines = append(b.Lines[:b.CursorLine], b.Lines[b.CursorLine + 1:]...)
-
-        b.CursorLine -= 1
-
-        b.CurrentLine = &b.Lines[b.CursorLine]
-
-        b.Draw()
+    if b.CursorCol > 0 {
+        line := b.CurrentLine
+        b.CurrentLine.Content = line.Content[:b.CursorCol - 1] + line.Content[b.CursorCol:]
+        b.CursorCol -= 1
+        b.DrawCursor()
 
         return
     }
 
-    line := b.CurrentLine
-    b.CurrentLine.Content = line.Content[:b.CursorCol - 1] + line.Content[b.CursorCol:]
-    b.CursorCol -= 1
-    b.DrawCursor()
+
+    if b.CursorLine == 0 {
+        return
+    }
+
+    b.CursorCol = len(b.Lines[b.CursorLine - 1].Content)
+
+    if len(b.CurrentLine.Content) > 0 {
+        b.Lines[b.CursorLine - 1].Content += b.CurrentLine.Content
+    }
+
+    b.Lines = append(b.Lines[:b.CursorLine], b.Lines[b.CursorLine + 1:]...)
+
+    b.CursorLine -= 1
+    b.CurrentLine = &b.Lines[b.CursorLine]
+
+    b.Draw()
 }
 
 func (b *Buffer) CarryLine() {

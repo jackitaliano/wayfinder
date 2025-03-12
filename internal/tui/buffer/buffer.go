@@ -18,6 +18,7 @@ type Buffer struct {
     fillLine Line
     CursorLine int
     CursorCol int
+    heldCursorCol int
 }
 
 func NewBuffer(termCol int, termLine int, width int, height int) Buffer {
@@ -37,6 +38,7 @@ func NewBuffer(termCol int, termLine int, width int, height int) Buffer {
         currLine,
         statusLine,
         fillLine,
+        0,
         0,
         0,
     }

@@ -62,15 +62,15 @@ func (b Buffer) DrawFillLine(lineNum int) {
 
 func (b Buffer) Draw() {
     for i := 0; i < b.CursorLine; i++ {
-        b.Lines[i].Gutter = fmt.Sprintf("%v | ", i + 1)
+        b.Lines[i].Gutter = fmt.Sprintf(" %v  ", i + 1)
         b.DrawLine(i)
     }
 
-    b.CurrentLine.Gutter = fmt.Sprintf("%v | ", b.CursorLine + 1)
+    b.CurrentLine.Gutter = fmt.Sprintf(" %v  ", b.CursorLine + 1)
     b.DrawCursor()
 
     for i := b.CursorLine + 1; i < len(b.Lines); i++ {
-        b.Lines[i].Gutter = fmt.Sprintf("%v | ", i + 1)
+        b.Lines[i].Gutter = fmt.Sprintf(" %v  ", i + 1)
         b.DrawLine(i)
     }
 
