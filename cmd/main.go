@@ -7,6 +7,7 @@ import (
 
 	"github.com/jackitaliano/wayfinder/internal/term/app"
 	"github.com/jackitaliano/wayfinder/internal/tui"
+	"github.com/jackitaliano/wayfinder/internal/tui/input"
 )
 
 func main(){
@@ -35,14 +36,17 @@ func main(){
         NW:'x',
     }
 
+
     screen := tui.NewScreen(borderChars)
-    input := tui.NewInput(&screen)
+    ctx := tui.NewContext(screen.Buffer)
+
+    input := input.NewInputHandler()
     tui.ListenForKeys(keyChan)
 
     screen.Draw()
 
 
     for key := range keyChan {
-        input.HandleKey(key)
+        input.HandleKey(ctx, key)
     }
 }
