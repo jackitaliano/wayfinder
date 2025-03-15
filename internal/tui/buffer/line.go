@@ -20,7 +20,7 @@ func BlankLine() Line {
 }
 
 func FillLine(width int) Line {
-    return Line{color.GreenBg, "", strings.Repeat(" ", width), ""}
+    return Line{color.BlackBg, "", strings.Repeat(" ", width), ""}
 }
 
 type StatusLine struct {

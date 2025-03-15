@@ -51,6 +51,7 @@ func (b Buffer) DrawStatusLine() {
     fmt.Fprint(os.Stdin, b.StatusLine.Fg, b.StatusLine.Bg, b.StatusLine.Separator, b.StatusLine.Content, pad, color.ResetFormat)
 
     fmt.Fprint(os.Stdin, b.StatusLine.Fg, b.StatusLine.Bg, input, b.StatusLine.Separator, position, color.ResetFormat)
+    cursor.SetPos(os.Stdin, b.TermLine + b.CursorLine + 1, b.TermCol + b.CursorCol + len(b.CurrentLine.Gutter) + 1)
 }
 
 func (b Buffer) DrawFillLine(lineNum int) {

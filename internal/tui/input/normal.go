@@ -1,91 +1,121 @@
 package input
 
 import (
-	"fmt"
-
-	"github.com/jackitaliano/wayfinder/internal/tui"
+	"github.com/jackitaliano/wayfinder/internal/tui/events"
+	"github.com/jackitaliano/wayfinder/internal/tui/ops"
 )
 
 
-type NormalHandler struct {
-    keys map[byte]Op
-}
+func defineNormalOps() map[byte]events.InputEvent {
+    return map[byte]events.InputEvent {
+        8: events.NoOpInput("BS"),
+        9: events.NoOpInput("TAB"),
+        10: events.NoOpInput("LF"), // return mac/linux
+        // 13: "CR", // return windows
+        27: events.NoOpInput("ESC"),
 
-func (i NormalHandler) Handle(context *tui.Context, input byte) error {
-    op, handled := i.keys[input]
+        32: events.NoOpInput(" "),
+        33: events.NoOpInput("!"),
+        34: events.NoOpInput("\""),
+        35: events.NoOpInput("#"),
+        36: events.MoveOpInput("$"),
+        37: events.NoOpInput("%"),
+        38: events.NoOpInput("&"),
+        39: events.NoOpInput("'"),
+        40: events.NoOpInput("("),
+        41: events.NoOpInput(")"),
+        42: events.NoOpInput("*"),
+        43: events.NoOpInput("+"),
+        44: events.NoOpInput(","),
+        45: events.NoOpInput("-"),
+        46: events.NoOpInput("."),
+        47: events.NoOpInput("/"),
 
-    if !handled {
-        return &UnhandledKeyError{input}
+        48: events.MoveOpInput("0"),
+        49: events.NoOpInput("1"),
+        50: events.NoOpInput("2"),
+        51: events.NoOpInput("3"),
+        52: events.NoOpInput("4"),
+        53: events.NoOpInput("5"),
+        54: events.NoOpInput("6"),
+        55: events.NoOpInput("7"),
+        56: events.NoOpInput("8"),
+        57: events.NoOpInput("9"),
+
+        58: events.NoOpInput(":"),
+        59: events.NoOpInput(";"),
+        60: events.NoOpInput("<"),
+        61: events.NoOpInput("="),
+        62: events.NoOpInput(">"),
+        63: events.NoOpInput("?"),
+        64: events.NoOpInput("@"),
+
+        65: events.ChangeModeInput("A"),
+        66: events.NoOpInput("B"),
+        67: events.NoOpInput("C"),
+        68: events.DeleteInput("D"),
+        69: events.NoOpInput("E"),
+        70: events.NoOpInput("F"),
+        71: events.NoOpInput("G"),
+        72: events.NoOpInput("H"),
+        73: events.ChangeModeInput("I"),
+        74: events.NoOpInput("J"),
+        75: events.NoOpInput("K"),
+        76: events.NoOpInput("L"),
+        77: events.NoOpInput("M"),
+        78: events.NoOpInput("N"),
+        79: events.NormalInput(ops.OpenLineOp{Key: "O"}),
+        80: events.NoOpInput("P"),
+        81: events.NoOpInput("Q"),
+        82: events.NoOpInput("R"),
+        83: events.NoOpInput("S"),
+        84: events.NoOpInput("T"),
+        85: events.NoOpInput("U"),
+        86: events.NoOpInput("V"),
+        87: events.NoOpInput("W"),
+        88: events.NoOpInput("X"),
+        89: events.NoOpInput("Y"),
+        90: events.NoOpInput("Z"),
+
+        91: events.NoOpInput("["),
+        92: events.NoOpInput("\\"),
+        93: events.NoOpInput("]"),
+        94: events.NoOpInput("^"),
+        95: events.NoOpInput("_"),
+        96: events.NoOpInput("`"),
+
+        97: events.ChangeModeInput("a"),
+        98: events.NoOpInput("b"),
+        99: events.NoOpInput("c"),
+        100: events.NoOpInput("d"),
+        101: events.NoOpInput("e"),
+        102: events.NoOpInput("f"),
+        103: events.NoOpInput("g"),
+        104: events.MoveOpInput("h"),
+        105: events.ChangeModeInput("i"),
+        106: events.MoveOpInput("j"),
+        107: events.MoveOpInput("k"),
+        108: events.MoveOpInput( "l"),
+        109: events.NoOpInput("m"),
+        110: events.NoOpInput("n"),
+        111: events.NormalInput(ops.OpenLineOp{Key: "o"}),
+        112: events.NoOpInput("p"),
+        113: events.NoOpInput("q"),
+        114: events.NoOpInput("r"),
+        115: events.NoOpInput("s"),
+        116: events.NoOpInput("t"),
+        117: events.NoOpInput("u"),
+        118: events.NoOpInput("v"),
+        119: events.NoOpInput("w"),
+        120: events.DeleteInput("x"),
+        121: events.NoOpInput("y"),
+        122: events.NoOpInput("z"),
+
+        123: events.NoOpInput("{"),
+        124: events.NoOpInput("|"),
+        125: events.NoOpInput("}"),
+        126: events.NoOpInput("~"),
+
+        127: events.NoOpInput("DEL"),
     }
-
-    err := op.Handler(context, op.Keys)
-
-    if err != nil {
-        return &HandlerError{
-            fmt.Sprint("normal op handler error: ", err),
-            context,
-        }
-    }
-
-    return nil
-}
-
-func MoveOp(ctx *tui.Context, op string) error {
-    if op == "j" {
-        ctx.ActiveBuffer.MoveCursorDown()
-    } else if op == "k" {
-        ctx.ActiveBuffer.MoveCursorUp()
-    } else if op == "h" {
-        ctx.ActiveBuffer.MoveCursorLeft()
-    } else if op == "l" {
-        ctx.ActiveBuffer.MoveCursorRight()
-    } else if op == "0" {
-        ctx.ActiveBuffer.CursorHome()
-    } else if op == "$" {
-        ctx.ActiveBuffer.CursorEnd()
-    }
-
-    return nil
-}
-
-func ChangeModeOp(ctx *tui.Context, op string) error {
-    if op == "i" {
-        ctx.ActiveBuffer.CursorInsertMode()
-    } else if op == "I" {
-        ctx.ActiveBuffer.CursorHome()
-        ctx.ActiveBuffer.CursorInsertMode()
-    } else if op == "a" {
-        ctx.ActiveBuffer.CursorAppendMode()
-    } else if op == "A" {
-        ctx.ActiveBuffer.CursorEnd()
-        ctx.ActiveBuffer.CursorAppendMode()
-    }
-
-    ctx.Mode = tui.INSERT
-
-    return nil
-}
-
-func OpenLineOp(ctx *tui.Context, op string) error {
-    if op == "o" {
-        ctx.ActiveBuffer.OpenLineBelow()
-        ctx.ActiveBuffer.CursorInsertMode()
-    } else if op == "O" {
-        ctx.ActiveBuffer.OpenLineAbove()
-        ctx.ActiveBuffer.CursorInsertMode()
-    }
-
-    ctx.Mode = tui.INSERT
-
-    return nil
-}
-
-func DeleteOp(ctx *tui.Context, op string) error {
-    if op == "D" {
-        ctx.ActiveBuffer.DeleteToEnd()
-    } else if op == "x" {
-        ctx.ActiveBuffer.DeleteChar()
-    }
-
-    return nil
 }

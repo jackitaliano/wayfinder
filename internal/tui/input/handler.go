@@ -4,70 +4,68 @@ import (
 	"fmt"
 
 	"github.com/jackitaliano/wayfinder/internal/tui"
+	"github.com/jackitaliano/wayfinder/internal/tui/events"
+	"github.com/jackitaliano/wayfinder/internal/tui/ops"
 )
 
 type InputHandler struct {
-    normalHandler ModeHandler
-    insertHandler ModeHandler
+    ctx *tui.Context
+    eventHandler *events.EventHandler
+    normalKeys map[byte]events.InputEvent
+    insertKeys map[byte]events.InputEvent
 }
 
-func NewInputHandler() InputHandler {
-
-    normalHandler := &NormalHandler{defineNormalOps()}
-    insertHandler := &InsertHandler{defineInsertOps()}
+func NewInputHandler(ctx *tui.Context, eventHandler *events.EventHandler) InputHandler {
+    normalKeys := defineNormalOps()
+    insertKeys := defineInsertOps()
 
     return InputHandler{
-        normalHandler,
-        insertHandler,
+        ctx,
+        eventHandler,
+        normalKeys,
+        insertKeys,
     }
-
 }
 
-func (i *InputHandler) HandleKey(ctx *tui.Context, inputKey byte) {
-    if ctx.Mode == tui.NORMAL {
-        err := i.normalHandler.Handle(ctx, inputKey)
+func (i *InputHandler) HandleKey(inputKey byte) error {
+    i.eventHandler.PostEvent(events.LogEvent{Type: "INFO", Message: fmt.Sprintf("ctx.mode: %v", i.ctx.Mode)})
+    if i.ctx.Mode == tui.NORMAL {
+        event, handled := i.normalKeys[inputKey]
 
-        if err != nil {
-            ctx.ActiveBuffer.StatusPrint(err)
+        if !handled {
+            return &UnhandledKeyError{inputKey}
         }
-        return
-    }
 
-    if ctx.Mode == tui.INSERT {
-        err := i.insertHandler.Handle(ctx, inputKey)
-
-        if err != nil {
-            ctx.ActiveBuffer.StatusPrint(err)
+        switch event.Op.(type) {
+        case ops.ChangeModeOp:
+            i.ctx.Mode = tui.INSERT
         }
-        return
+
+        i.eventHandler.PostEvent(event)
+
+        return nil
     }
 
+    if i.ctx.Mode == tui.INSERT {
+        event, handled := i.insertKeys[inputKey]
 
-    ctx.ActiveBuffer.StatusPrint("Error: mode not selected")
+        if !handled {
+            return &UnhandledKeyError{inputKey}
+        }
 
-}
+        switch event.Op.(type) {
+        case ops.ChangeModeOp:
+            i.ctx.Mode = tui.NORMAL
+        }
 
-type OpHandler func(ctx *tui.Context, op string) error
+        i.eventHandler.PostEvent(event)
 
-func NoOp(ctx *tui.Context, op string) error { return nil }
+        return nil
+    }
 
-type ModeHandler interface {
-    Handle(*tui.Context, byte) error
-}
+    i.eventHandler.PostEvent(events.LogEvent{Type: "ERROR", Message: "mode not selected"})
 
-type Op struct {
-    Keys string
-    Handler OpHandler
-    IsChorded bool
-}
-
-type HandlerError struct {
-    Message string
-    Context *tui.Context
-}
-
-func (e HandlerError) Error() string {
-    return fmt.Sprintf("HandlerError: %v\nContext: %v", e.Message, e.Context )
+    return nil
 }
 
 type UnhandledKeyError struct {

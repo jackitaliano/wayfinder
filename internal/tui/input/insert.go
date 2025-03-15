@@ -1,62 +1,121 @@
 package input
 
 import (
-	"fmt"
-
-	"github.com/jackitaliano/wayfinder/internal/tui"
+	"github.com/jackitaliano/wayfinder/internal/tui/events"
+	"github.com/jackitaliano/wayfinder/internal/tui/ops"
 )
 
-type InsertHandler struct {
-    keys map[byte]Op
-}
 
-func (i InsertHandler) Handle(context *tui.Context, input byte) error {
-    op, handled := i.keys[input]
+func defineInsertOps() map[byte]events.InputEvent {
+    return map[byte]events.InputEvent {
+        8: events.NormalInput(ops.BackspaceOp{Key: "BS"}),
+        9: events.NormalInput(ops.TabOp{Key: "TAB"}), // ab
+        10: events.NormalInput(ops.CarryLineOp{Key: "LF"}), // return mac/liux
+        // 13: "CR", // return windows
+        27: events.ChangeModeInput("ESC"),
 
-    if !handled {
-        return &UnhandledKeyError{input}
+        32: events.InsertInput(" "),
+        33: events.InsertInput("!"),
+        34: events.InsertInput("\""),
+        35: events.InsertInput("#"),
+        36: events.InsertInput("$"),
+        37: events.InsertInput("%"),
+        38: events.InsertInput("&"),
+        39: events.InsertInput("'"),
+        40: events.InsertInput("("),
+        41: events.InsertInput(")"),
+        42: events.InsertInput("*"),
+        43: events.InsertInput("+"),
+        44: events.InsertInput(","),
+        45: events.InsertInput("-"),
+        46: events.InsertInput("."),
+        47: events.InsertInput("/"),
+
+        48: events.InsertInput("0"),
+        49: events.InsertInput("1"),
+        50: events.InsertInput("2"),
+        51: events.InsertInput("3"),
+        52: events.InsertInput("4"),
+        53: events.InsertInput("5"),
+        54: events.InsertInput("6"),
+        55: events.InsertInput("7"),
+        56: events.InsertInput("8"),
+        57: events.InsertInput("9"),
+
+        58: events.InsertInput(":"),
+        59: events.InsertInput(";"),
+        60: events.InsertInput("<"),
+        61: events.InsertInput("="),
+        62: events.InsertInput(">"),
+        63: events.InsertInput("?"),
+        64: events.InsertInput("@"),
+
+        65: events.InsertInput("A"),
+        66: events.InsertInput("B"),
+        67: events.InsertInput("C"),
+        68: events.InsertInput("D"),
+        69: events.InsertInput("E"),
+        70: events.InsertInput("F"),
+        71: events.InsertInput("G"),
+        72: events.InsertInput("H"),
+        73: events.InsertInput("I"),
+        74: events.InsertInput("J"),
+        75: events.InsertInput("K"),
+        76: events.InsertInput("L"),
+        77: events.InsertInput("M"),
+        78: events.InsertInput("N"),
+        79: events.InsertInput("O"),
+        80: events.InsertInput("P"),
+        81: events.InsertInput("Q"),
+        82: events.InsertInput("R"),
+        83: events.InsertInput("S"),
+        84: events.InsertInput("T"),
+        85: events.InsertInput("U"),
+        86: events.InsertInput("V"),
+        87: events.InsertInput("W"),
+        88: events.InsertInput("X"),
+        89: events.InsertInput("Y"),
+        90: events.InsertInput("Z"),
+
+        91: events.InsertInput("["),
+        92: events.InsertInput("\\"),
+        93: events.InsertInput("]"),
+        94: events.InsertInput("^"),
+        95: events.InsertInput("_"),
+        96: events.InsertInput("`"),
+
+        97: events.InsertInput("a"),
+        98: events.InsertInput("b"),
+        99: events.InsertInput("c"),
+        100: events.InsertInput("d"),
+        101: events.InsertInput("e"),
+        102: events.InsertInput("f"),
+        103: events.InsertInput("g"),
+        104: events.InsertInput("h"),
+        105: events.InsertInput("i"),
+        106: events.InsertInput("j"),
+        107: events.InsertInput("k"),
+        108: events.InsertInput("l"),
+        109: events.InsertInput("m"),
+        110: events.InsertInput("n"),
+        111: events.InsertInput("o"),
+        112: events.InsertInput("p"),
+        113: events.InsertInput("q"),
+        114: events.InsertInput("r"),
+        115: events.InsertInput("s"),
+        116: events.InsertInput("t"),
+        117: events.InsertInput("u"),
+        118: events.InsertInput("v"),
+        119: events.InsertInput("w"),
+        120: events.InsertInput("x"),
+        121: events.InsertInput("y"),
+        122: events.InsertInput("z"),
+
+        123: events.InsertInput("{"),
+        124: events.InsertInput("|"),
+        125: events.InsertInput("}"),
+        126: events.InsertInput("~"),
+
+        127: events.NormalInput(ops.BackspaceOp{Key: "DEL"}),
     }
-
-    err := op.Handler(context, op.Keys)
-
-    if err != nil {
-        return &HandlerError{
-            fmt.Sprint("insert op handler error: ", err),
-            context,
-        }
-    }
-
-    return nil
-}
-
-func InsertStringOp(ctx *tui.Context, op string) error {
-    ctx.ActiveBuffer.InsertChar(op)
-
-    return nil
-}
-
-func NormalModeOp(ctx *tui.Context, op string) error {
-    ctx.ActiveBuffer.CursorNormalMode()
-
-    ctx.Mode = tui.NORMAL
-
-    return nil
-}
-
-func CarryLineOp(ctx *tui.Context, op string) error {
-    ctx.ActiveBuffer.CarryLine()
-
-    return nil
-}
-
-func BackspaceOp(ctx *tui.Context, op string) error {
-    ctx.ActiveBuffer.Backspace()
-
-    return nil
-}
-
-func TabOp(ctx *tui.Context, op string) error {
-    ctx.ActiveBuffer.InsertChar(" ")
-
-    return nil
 }
