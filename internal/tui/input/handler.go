@@ -2,24 +2,27 @@ package input
 
 import (
 	"fmt"
+	"log/slog"
 
-	"github.com/jackitaliano/wayfinder/internal/tui"
+	"github.com/jackitaliano/wayfinder/internal/tui/context"
 	"github.com/jackitaliano/wayfinder/internal/tui/events"
 	"github.com/jackitaliano/wayfinder/internal/tui/ops"
 )
 
 type InputHandler struct {
-    ctx *tui.Context
+    mode string
+    ctx *context.Context
     eventHandler *events.EventHandler
     normalKeys map[byte]events.InputEvent
     insertKeys map[byte]events.InputEvent
 }
 
-func NewInputHandler(ctx *tui.Context, eventHandler *events.EventHandler) InputHandler {
+func NewInputHandler(ctx *context.Context, eventHandler *events.EventHandler) InputHandler {
     normalKeys := defineNormalOps()
     insertKeys := defineInsertOps()
 
     return InputHandler{
+        "NORMAL",
         ctx,
         eventHandler,
         normalKeys,
@@ -28,8 +31,8 @@ func NewInputHandler(ctx *tui.Context, eventHandler *events.EventHandler) InputH
 }
 
 func (i *InputHandler) HandleKey(inputKey byte) error {
-    i.eventHandler.PostEvent(events.LogEvent{Type: "INFO", Message: fmt.Sprintf("ctx.mode: %v", i.ctx.Mode)})
-    if i.ctx.Mode == tui.NORMAL {
+    slog.Info(fmt.Sprintf("key: %v", inputKey))
+    if i.mode == "NORMAL" {
         event, handled := i.normalKeys[inputKey]
 
         if !handled {
@@ -38,7 +41,7 @@ func (i *InputHandler) HandleKey(inputKey byte) error {
 
         switch event.Op.(type) {
         case ops.ChangeModeOp:
-            i.ctx.Mode = tui.INSERT
+            i.mode = "INSERT"
         }
 
         i.eventHandler.PostEvent(event)
@@ -46,7 +49,7 @@ func (i *InputHandler) HandleKey(inputKey byte) error {
         return nil
     }
 
-    if i.ctx.Mode == tui.INSERT {
+    if i.mode == "INSERT" {
         event, handled := i.insertKeys[inputKey]
 
         if !handled {
@@ -55,7 +58,7 @@ func (i *InputHandler) HandleKey(inputKey byte) error {
 
         switch event.Op.(type) {
         case ops.ChangeModeOp:
-            i.ctx.Mode = tui.NORMAL
+            i.mode = "NORMAL"
         }
 
         i.eventHandler.PostEvent(event)
@@ -63,7 +66,7 @@ func (i *InputHandler) HandleKey(inputKey byte) error {
         return nil
     }
 
-    i.eventHandler.PostEvent(events.LogEvent{Type: "ERROR", Message: "mode not selected"})
+    i.eventHandler.PostEvent(events.LogEvent{Level: "ERROR", Msg: "mode not selected"})
 
     return nil
 }

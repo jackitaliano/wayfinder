@@ -1,26 +1,33 @@
 package app
 
 import (
+	// "fmt"
 	"log"
 	"os"
 	"os/exec"
 	"strconv"
 	"strings"
+	"time"
 
-    "github.com/jackitaliano/wayfinder/internal/term/buffer"
-    "github.com/jackitaliano/wayfinder/internal/term/io"
+	"github.com/jackitaliano/wayfinder/internal/term/buffer"
+	"github.com/jackitaliano/wayfinder/internal/term/cursor"
+	"github.com/jackitaliano/wayfinder/internal/term/io"
 )
 
 type TermSpecifier string
 
 func Startup() {
-    buffer.EnableAlternate(os.Stdin)
+    cursor.SaveCursorPos(os.Stdout)
+    buffer.EnableAlternate(os.Stdout)
     io.EnableRawMode()
 }
 
 func Cleanup() {
-    buffer.DisableAlternate(os.Stdin)
+    buffer.DisableAlternate(os.Stdout)
     io.DisableRawMode()
+    cursor.RestoreCursorPos(os.Stdout)
+
+    time.Sleep(time.Millisecond)
 }
 
 func GetSize() (int, int) {

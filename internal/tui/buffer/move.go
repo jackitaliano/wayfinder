@@ -67,13 +67,13 @@ func (b *Buffer) MoveCursorRight() {
 
 func (b *Buffer) CursorNormalMode() {
     b.StatusLine.Mode = NORMAL
-    cursor.SetBlock(os.Stdin)
+    cursor.SetBlock(os.Stdout)
     b.MoveCursorLeft()
     b.DrawCursor()
 }
 
 func (b *Buffer) CursorInsertMode() {
-    cursor.SetBar(os.Stdin)
+    cursor.SetBar(os.Stdout)
     b.StatusLine.Mode = INSERT
     b.DrawCursor()
 }
@@ -83,7 +83,7 @@ func (b *Buffer) CursorAppendMode() {
     if len(b.CurrentLine.Content) > 0 {
         b.CursorCol += 1
     }
-    cursor.SetBar(os.Stdin)
+    cursor.SetBar(os.Stdout)
     b.StatusLine.Mode = INSERT
     b.DrawCursor()
 }

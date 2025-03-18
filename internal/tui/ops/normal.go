@@ -44,27 +44,13 @@ func (o ChangeModeOp) Run(buffer *buffer.Buffer) error {
     } else if o.Key == "A" {
         buffer.CursorEnd()
         buffer.CursorAppendMode()
-    }
-
-    // ctx.Mode = tui.INSERT
-
-    return nil
-}
-
-type OpenLineOp struct {
-    Key string
-}
-
-func (o OpenLineOp) Run(buffer *buffer.Buffer) error {
-    if o.Key == "o" {
+    } else if o.Key == "o" {
         buffer.OpenLineBelow()
         buffer.CursorInsertMode()
     } else if o.Key == "O" {
         buffer.OpenLineAbove()
         buffer.CursorInsertMode()
     }
-
-    // ctx.Mode = tui.INSERT
 
     return nil
 }

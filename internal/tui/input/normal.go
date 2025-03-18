@@ -2,7 +2,6 @@ package input
 
 import (
 	"github.com/jackitaliano/wayfinder/internal/tui/events"
-	"github.com/jackitaliano/wayfinder/internal/tui/ops"
 )
 
 
@@ -64,7 +63,7 @@ func defineNormalOps() map[byte]events.InputEvent {
         76: events.NoOpInput("L"),
         77: events.NoOpInput("M"),
         78: events.NoOpInput("N"),
-        79: events.NormalInput(ops.OpenLineOp{Key: "O"}),
+        79: events.ChangeModeInput("O"),
         80: events.NoOpInput("P"),
         81: events.NoOpInput("Q"),
         82: events.NoOpInput("R"),
@@ -98,7 +97,7 @@ func defineNormalOps() map[byte]events.InputEvent {
         108: events.MoveOpInput( "l"),
         109: events.NoOpInput("m"),
         110: events.NoOpInput("n"),
-        111: events.NormalInput(ops.OpenLineOp{Key: "o"}),
+        111: events.ChangeModeInput("o"),
         112: events.NoOpInput("p"),
         113: events.NoOpInput("q"),
         114: events.NoOpInput("r"),

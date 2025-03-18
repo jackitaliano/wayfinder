@@ -1,14 +1,7 @@
-package tui
+package input
 
 import (
-	"os"
-)
-
-type Mode string
-
-const (
-    NORMAL Mode = "NORMAL"
-    INSERT Mode = "INSERT"
+    "os"
 )
 
 func ListenForKeys(keyChan chan byte) {

@@ -1,55 +1,64 @@
 package main
 
 import (
+	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
 
 	"github.com/jackitaliano/wayfinder/internal/term/app"
-	"github.com/jackitaliano/wayfinder/internal/tui"
+	"github.com/jackitaliano/wayfinder/internal/tui/buffer"
+	"github.com/jackitaliano/wayfinder/internal/tui/context"
 	"github.com/jackitaliano/wayfinder/internal/tui/events"
 	"github.com/jackitaliano/wayfinder/internal/tui/input"
+	"github.com/jackitaliano/wayfinder/internal/tui/log"
 )
 
 func main(){
     app.Startup()
-    defer app.Cleanup()
     keyChan := make(chan byte)
-    defer close(keyChan)
+
+    width, height := app.GetSize()
+    buffer := buffer.NewBuffer(0, 0, width, height)
+
+    ctx := context.NewContext()
+
+    eventHandler := events.NewEventHandler(ctx, buffer)
+    logHandler, logCloser := log.NewHandler(eventHandler)
+
+    logger := slog.New(*logHandler)
+
+    slog.SetDefault(logger)
+
+
+    inputHandler := input.NewInputHandler(ctx, eventHandler)
+    input.ListenForKeys(keyChan)
+
+    buffer.Draw()
 
     sigChan := make(chan os.Signal, 1)
     signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+
     go func() {
-        <-sigChan
-        app.Cleanup()
-        close(keyChan)
-        os.Exit(0)
+        for sig := range sigChan {
+            if sig == syscall.SIGINT {
+                keyChan <- 3
+            }
+        }
     }()
 
-    borderChars := tui.BorderChars{
-        N:'-',
-        NE:'x',
-        E:'|',
-        SE:'x',
-        S:'-',
-        SW:'x',
-        W:'|',
-        NW:'x',
-    }
-
-
-    screen := tui.NewScreen(borderChars)
-    ctx := tui.NewContext(screen.Buffer)
-    eventHandler := events.NewEventHandler(screen.Buffer)
-
-    input := input.NewInputHandler(ctx, eventHandler)
-    tui.ListenForKeys(keyChan)
-
-    screen.Draw()
-
-
     for key := range keyChan {
-        input.HandleKey(key)
+        if key == 3 {
+            close(sigChan)
+            close(keyChan)
+            app.Cleanup()
+            logCloser()
+            return
+        }
+
+        // logger.Info(fmt.Sprintf("Key: %v", key))
+
+        inputHandler.HandleKey(key)
         eventHandler.HandlePendingEvents()
     }
 }

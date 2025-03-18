@@ -21,7 +21,7 @@ type Buffer struct {
     heldCursorCol int
 }
 
-func NewBuffer(termCol int, termLine int, width int, height int) Buffer {
+func NewBuffer(termCol int, termLine int, width int, height int) *Buffer {
 
     lines := []Line{BlankLine()}
 
@@ -29,7 +29,7 @@ func NewBuffer(termCol int, termLine int, width int, height int) Buffer {
     statusLine := StatusLine{"", "", " | ", NORMAL, 0, 0, "", 0, " "}
     fillLine := FillLine(width)
 
-    buffer := Buffer{
+    buffer := &Buffer{
         termCol,
         termLine,
         width,

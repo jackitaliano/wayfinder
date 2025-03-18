@@ -65,3 +65,11 @@ func SetBlock(io io.Writer) {
 func SetBar(io io.Writer) {
     fmt.Fprintf(io, esc + bar)
 }
+
+func SaveCursorPos(io io.Writer) {
+    fmt.Fprintf(io, esc + save)
+}
+
+func RestoreCursorPos(io io.Writer) {
+    fmt.Fprintf(io, esc + restoreSave)
+}

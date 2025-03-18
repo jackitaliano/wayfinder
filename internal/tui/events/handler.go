@@ -4,14 +4,7 @@ import (
 	"log"
 
 	"github.com/jackitaliano/wayfinder/internal/tui/buffer"
-)
-
-type EventType string
-
-const (
-    INPUT_EVENT EventType = "INPUT"
-    BUFFER_EVENT EventType = "BUFFER"
-    DRAW_EVENT EventType = "DRAW"
+	"github.com/jackitaliano/wayfinder/internal/tui/context"
 )
 
 type EventPriority int
@@ -32,7 +25,7 @@ type EventHandler struct {
     drawEvents []DrawEvent
 }
 
-func NewEventHandler(buffer *buffer.Buffer) *EventHandler {
+func NewEventHandler(ctx *context.Context, buffer *buffer.Buffer) *EventHandler {
     return &EventHandler{
         buffer,
         []InputEvent{},
@@ -46,7 +39,16 @@ type Event interface {
     Handle(*buffer.Buffer) error
 }
 
+func (e *EventHandler) SetBuffer(buffer *buffer.Buffer) {
+    e.activeBuffer = buffer
+}
+
 func (e *EventHandler) PostEvent(event Event) {
+    if e.activeBuffer == nil {
+
+
+    }
+
     switch ev := event.(type) {
     case InputEvent:
         e.inputEvents = append(e.inputEvents, ev)
@@ -138,13 +140,13 @@ func (e *EventHandler) clearDrawEvents() {
 }
 
 type LogEvent struct {
-    Type string
-    Message string
+    Level string
+    Msg string
 }
 
 func (e LogEvent) Handle(buffer *buffer.Buffer) error {
 
-    buffer.StatusPrintf("%v: %v", e.Type, e.Message)
+    buffer.StatusPrintf("%v: %v", e.Level, e.Msg)
 
     return nil
 }

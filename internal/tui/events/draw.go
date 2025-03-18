@@ -7,7 +7,7 @@ import (
 )
 
 type DrawEvent struct {
-    BufferId int
+    // BufferId int
     LineNumber int
     StartCol int
     Content string
