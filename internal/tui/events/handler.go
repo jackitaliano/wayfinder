@@ -25,7 +25,7 @@ type EventHandler struct {
     drawEvents []DrawEvent
 }
 
-func NewEventHandler(ctx *context.Context, buffer *buffer.Buffer) *EventHandler {
+func NewEventHandler(buffer *buffer.Buffer) *EventHandler {
     return &EventHandler{
         buffer,
         []InputEvent{},
@@ -61,11 +61,11 @@ func (e *EventHandler) PostEvent(event Event) {
     }
 }
 
-func (e *EventHandler) HandlePendingEvents() {
-    e.HandlePendingInputEvents()
-    e.HandlePendingBufferEvents()
-    e.HandlePendingOtherEvents()
-    e.HandlePendingDrawEvents()
+func (e *EventHandler) HandlePendingEvents(ctx *context.Context) {
+    e.HandlePendingInputEvents(ctx)
+    e.HandlePendingBufferEvents(ctx)
+    e.HandlePendingOtherEvents(ctx)
+    e.HandlePendingDrawEvents(ctx)
 }
 
 func (e *EventHandler) clearEvents() {
@@ -75,7 +75,7 @@ func (e *EventHandler) clearEvents() {
     e.clearDrawEvents()
 }
 
-func (e *EventHandler) HandlePendingInputEvents() {
+func (e *EventHandler) HandlePendingInputEvents(ctx *context.Context) {
     for _, event := range e.inputEvents {
         err := event.Handle(e.activeBuffer)
 
@@ -87,7 +87,7 @@ func (e *EventHandler) HandlePendingInputEvents() {
     e.clearInputEvents()
 }
 
-func (e *EventHandler) HandlePendingBufferEvents() {
+func (e *EventHandler) HandlePendingBufferEvents(ctx *context.Context) {
     for _, event := range e.bufferEvents {
         err := event.Handle(e.activeBuffer)
 
@@ -99,7 +99,7 @@ func (e *EventHandler) HandlePendingBufferEvents() {
     e.clearBufferEvents()
 }
 
-func (e *EventHandler) HandlePendingOtherEvents() {
+func (e *EventHandler) HandlePendingOtherEvents(ctx *context.Context) {
     for _, event := range e.otherEvents {
         err := event.Handle(e.activeBuffer)
 
@@ -111,7 +111,7 @@ func (e *EventHandler) HandlePendingOtherEvents() {
     e.clearOtherEvents()
 }
 
-func (e *EventHandler) HandlePendingDrawEvents() {
+func (e *EventHandler) HandlePendingDrawEvents(ctx *context.Context) {
     for _, event := range e.bufferEvents {
         err := event.Handle(e.activeBuffer)
 

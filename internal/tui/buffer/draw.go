@@ -1,12 +1,12 @@
 package buffer
 
 import (
-    "os"
-    "strings"
-    "fmt"
+	"fmt"
+	"os"
+	"strings"
 
-	"github.com/jackitaliano/wayfinder/internal/term/cursor"
 	"github.com/jackitaliano/wayfinder/internal/term/color"
+	"github.com/jackitaliano/wayfinder/internal/term/cursor"
 )
 
 func (b Buffer) DrawCursor() {

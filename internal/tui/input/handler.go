@@ -2,7 +2,6 @@ package input
 
 import (
 	"fmt"
-	"log/slog"
 
 	"github.com/jackitaliano/wayfinder/internal/tui/context"
 	"github.com/jackitaliano/wayfinder/internal/tui/events"
@@ -11,27 +10,24 @@ import (
 
 type InputHandler struct {
     mode string
-    ctx *context.Context
     eventHandler *events.EventHandler
     normalKeys map[byte]events.InputEvent
     insertKeys map[byte]events.InputEvent
 }
 
-func NewInputHandler(ctx *context.Context, eventHandler *events.EventHandler) InputHandler {
+func NewInputHandler(eventHandler *events.EventHandler) InputHandler {
     normalKeys := defineNormalOps()
     insertKeys := defineInsertOps()
 
     return InputHandler{
         "NORMAL",
-        ctx,
         eventHandler,
         normalKeys,
         insertKeys,
     }
 }
 
-func (i *InputHandler) HandleKey(inputKey byte) error {
-    slog.Info(fmt.Sprintf("key: %v", inputKey))
+func (i *InputHandler) HandleKey(ctx *context.Context, inputKey byte) error {
     if i.mode == "NORMAL" {
         event, handled := i.normalKeys[inputKey]
 

@@ -23,15 +23,24 @@ func main(){
 
     ctx := context.NewContext()
 
-    eventHandler := events.NewEventHandler(ctx, buffer)
-    logHandler, logCloser := log.NewHandler(eventHandler)
+    eventHandler := events.NewEventHandler(buffer)
+
+    logOptions := log.MultiOptions{
+        GlobalOpts: &slog.HandlerOptions{ Level: slog.LevelDebug },
+        StdOpts: &slog.HandlerOptions{ Level: slog.LevelDebug },
+        FileOpts: &slog.HandlerOptions{ Level: slog.LevelDebug, AddSource: true},
+        StatusOpts: &slog.HandlerOptions{ Level: slog.LevelDebug },
+    }
+
+    logHandler, logCloser := log.NewHandler(eventHandler, &logOptions)
 
     logger := slog.New(*logHandler)
 
     slog.SetDefault(logger)
 
+    logger.Info("test position")
 
-    inputHandler := input.NewInputHandler(ctx, eventHandler)
+    inputHandler := input.NewInputHandler(eventHandler)
     input.ListenForKeys(keyChan)
 
     buffer.Draw()
@@ -47,6 +56,7 @@ func main(){
         }
     }()
 
+
     for key := range keyChan {
         if key == 3 {
             close(sigChan)
@@ -56,9 +66,7 @@ func main(){
             return
         }
 
-        // logger.Info(fmt.Sprintf("Key: %v", key))
-
-        inputHandler.HandleKey(key)
-        eventHandler.HandlePendingEvents()
+        inputHandler.HandleKey(ctx, key)
+        eventHandler.HandlePendingEvents(ctx)
     }
 }
